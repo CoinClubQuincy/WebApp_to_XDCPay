@@ -2,7 +2,7 @@ Website integration of XDCPay tutorial
 
   
 
-## **Step1:**
+## **Step 1:**
 
 **Dependencies:**
 
