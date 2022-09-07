@@ -117,27 +117,27 @@ In this example i created a basic login token where if the user hold the token t
     
     contract LoginTokenExample is ERC1155 {
     
-    uint256  public  constant LoginToken =  0;
+      uint256  public  constant LoginToken =  0;
+
+      constructor()  public ERC1155("Login Token Example")  {
+
+        _mint(msg.sender, LoginToken,  1,  "");
+
+      }
+
+      modifier OnlyLogin{
+
+        require(balanceOf(msg.sender,LoginToken)  >=  1,  "require Login token to login");
+
+        _;
+
+      }
+
+      function checkLogin()public OnlyLogin returns(bool){
+
+        return  true;
     
-    constructor()  public ERC1155("Login Token Example")  {
-    
-    _mint(msg.sender, LoginToken,  1,  "");
-    
-    }
-    
-    modifier OnlyLogin{
-    
-    require(balanceOf(msg.sender,LoginToken)  >=  1,  "require Login token to login");
-    
-    _;
-    
-    }
-    
-    function checkLogin()public OnlyLogin returns(bool){
-    
-    return  true;
-    
-    }
+      }
     
     }
 ````
