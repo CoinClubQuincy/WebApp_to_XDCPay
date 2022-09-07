@@ -20,9 +20,10 @@ Install Dependencies needed to connect to the XDC APIs to allow for the connecti
 
 **Ubuntu:**
 
+    sudo apt install nodejs
     npm i xdc-connect
 
-**Windows:**
+**Windows:** https://nodejs.org/en/download/
 
     npm i xdc-connect
 
