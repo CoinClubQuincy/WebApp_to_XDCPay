@@ -33,7 +33,7 @@ Install Dependencies needed to connect to the XDC APIs to allow for the connecti
 Integrate XDC Pay connect script into app.js script on Web application as well to allow for a connection to be made between the webApp and XDC Pay. Once the base connect script has been created additional functions can be included in the script to interact with the smart contract that manages the functionality of the site.
 
   
-
+````javascript
     // App.js
     
     import  React, { useState } from  "react";
@@ -93,7 +93,7 @@ Integrate XDC Pay connect script into app.js script on Web application as well t
     }
     
     export  default  App;
-    
+````    
       
 
 [Add web app display]
@@ -107,7 +107,7 @@ Integrate XDC Pay connect script into app.js script on Web application as well t
 In this example i created a basic login token where if the user hold the token they are able to login to website, but in reality and contract can be integrated into the website even contracts that were not originally created by the develop of the site
 
       
-    
+````solidity    
     // SPDX-License-Identifier: MIT
     
     pragma  solidity  ^0.8.0;
@@ -139,7 +139,7 @@ In this example i created a basic login token where if the user hold the token t
     }
     
     }
-
+````
   
 
 ## Step 4:
