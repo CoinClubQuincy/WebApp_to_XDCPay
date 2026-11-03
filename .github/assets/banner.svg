@@ -12,13 +12,13 @@
   <rect x="64" y="222" width="144" height="50" rx="10" fill="#ffffff" fill-opacity=".06" stroke="#60a5fa" stroke-opacity=".45"/>
   <text x="136.0" y="254" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" fill="#e2e8f0">React app</text>
   <path d="M215 247H233" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round"/><path d="M227 241l7 6-7 6" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="240" y="222" width="167" height="50" rx="10" fill="#ffffff" fill-opacity=".06" stroke="#60a5fa" stroke-opacity=".45"/>
-  <text x="323.5" y="254" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" fill="#e2e8f0">xdc-connect</text>
-  <path d="M414 247H432" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round"/><path d="M426 241l7 6-7 6" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="439" y="222" width="109" height="50" rx="10" fill="#ffffff" fill-opacity=".06" stroke="#60a5fa" stroke-opacity=".45"/>
-  <text x="493.5" y="254" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" fill="#e2e8f0">XDCPay</text>
-  <path d="M555 247H573" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round"/><path d="M567 241l7 6-7 6" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-  <rect x="580" y="222" width="202" height="50" rx="10" fill="#ffffff" fill-opacity=".06" stroke="#60a5fa" stroke-opacity=".45"/>
-  <text x="681.0" y="254" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" fill="#e2e8f0">smart contract</text>
-  <text x="64" y="318" font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif" font-size="19" fill="#94a3b8">A step-by-step tutorial from 2022. The code is a starting point.</text>
+  <rect x="240" y="222" width="214" height="50" rx="10" fill="#ffffff" fill-opacity=".06" stroke="#60a5fa" stroke-opacity=".45"/>
+  <text x="347.0" y="254" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" fill="#e2e8f0">window.ethereum</text>
+  <path d="M461 247H479" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round"/><path d="M473 241l7 6-7 6" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="486" y="222" width="109" height="50" rx="10" fill="#ffffff" fill-opacity=".06" stroke="#60a5fa" stroke-opacity=".45"/>
+  <text x="540.5" y="254" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" fill="#e2e8f0">XDCPay</text>
+  <path d="M602 247H620" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round"/><path d="M614 241l7 6-7 6" fill="none" stroke="#22d3ee" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="627" y="222" width="202" height="50" rx="10" fill="#ffffff" fill-opacity=".06" stroke="#60a5fa" stroke-opacity=".45"/>
+  <text x="728.0" y="254" text-anchor="middle" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="19" fill="#e2e8f0">smart contract</text>
+  <text x="64" y="318" font-family="ui-sans-serif, -apple-system, BlinkMacSystemFont, &quot;Segoe UI&quot;, Helvetica, Arial, sans-serif" font-size="19" fill="#94a3b8">A small working example. Tested in Chrome with a test wallet, not with XDCPay itself.</text>
 </svg>

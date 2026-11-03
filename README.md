@@ -4,71 +4,73 @@
 
 <p align="center">
   
-<img alt="network: XDC" src="https://img.shields.io/badge/network-XDC-2563eb">  <img alt="language: JavaScript" src="https://img.shields.io/badge/language-JavaScript-0e7490">  <img alt="status: tutorial" src="https://img.shields.io/badge/status-tutorial-b45309">  <img alt="license: none yet" src="https://img.shields.io/badge/license-none%20yet-475569">
+<a href="https://github.com/CoinClubQuincy/WebApp_to_XDCPay/actions/workflows/build.yml"><img alt="build" src="https://github.com/CoinClubQuincy/WebApp_to_XDCPay/actions/workflows/build.yml/badge.svg"></a>  <img alt="network: XDC" src="https://img.shields.io/badge/network-XDC-2563eb">  <img alt="language: TypeScript" src="https://img.shields.io/badge/language-TypeScript-0e7490">  <img alt="status: tutorial" src="https://img.shields.io/badge/status-tutorial-b45309">  <img alt="license: none yet" src="https://img.shields.io/badge/license-none%20yet-475569">
 </p>
 
 <p align="center">
-  <a href="#steps">Steps</a> · <a href="#what-this-repo-contains">What this repo contains</a>
+  <a href="#Run it">run-it</a> · <a href="#The tutorial">the-tutorial</a> · <a href="#What is tested">what-is-tested</a> · <a href="#Known issues">known-issues</a>
 </p>
 
-This tutorial walks through connecting a React web app to the XDCPay browser wallet, then deploying a small login-token contract for the site to use.
+This tutorial connects a React web app to the XDCPay browser wallet, then checks a login token held in a small smart contract. The repository is the finished example, so you can run it first and then read how each part works.
 
 > [!NOTE]
-> This was written in 2022 and hasn't been re-run in this review. Package and wallet versions may have changed.
+> This has been tested in Chrome with a test wallet connected to a local chain, not with the XDCPay extension itself. See [What is tested](#what-is-tested).
 
 ```mermaid
 flowchart LR
-    W[React web app] -->|xdc-connect| P[XDCPay extension]
-    P -->|signs transactions| X[XDC Network]
-    X --> C[Your smart contract]
+    W[React web app] -->|window.ethereum| P[XDCPay extension]
+    P -->|forwards calls| X[XDC Network]
+    X --> C[Login token contract]
 ```
 
-## Steps
-
-### 1. Install the dependency
+## Run it
 
 ```bash
-npm i xdc-connect
+git clone https://github.com/CoinClubQuincy/WebApp_to_XDCPay.git
+cd WebApp_to_XDCPay
+pnpm install
+pnpm dev
 ```
 
-### 2. Connect the wallet
+Open the address it prints. Without a wallet, the page shows a link to install XDCPay. With a wallet, follow these steps:
 
-Add the connect button to your React app. Once it works, add functions here that call your contract.
+1. Choose **Connect wallet**, and approve it in the wallet.
+2. Paste the address of your [deployed contract](#3-deploy-with-remix). To fill this in automatically, set `VITE_LOGIN_TOKEN_ADDRESS` in `.env.local`.
+3. Choose **Check login**.
 
-```jsx
-import React, { useState } from "react";
-import { XdcConnect, Disconnect } from "xdc-connect";
-import "./App.css";
+## The tutorial
 
-function App() {
-  const [wallet, setwallet] = useState({});
+### 1. Connect the wallet
 
-  return (
-    <div className="App">
-      <XdcConnect
-        btnClass={wallet.connected ? "btn btn-rounded btn-success" : "btn btn-rounded btn-warning"}
-        btnName={wallet.connected ? "CONNECTED" : "CONNECT"}
-        onConnect={(wallet) => setwallet(wallet)}
-        onDisconnect={(wallet) => setwallet(wallet)}
-      />
-      {wallet.connected ? <button onClick={Disconnect}>Logout</button> : ""}
-    </div>
-  );
+XDCPay adds a standard provider (EIP-1193) to the page as `window.ethereum`. The app needs no wallet library, and the code is in [`src/wallet.ts`](src/wallet.ts).
+
+```ts
+export async function connect(provider: WalletProvider): Promise<string> {
+  try {
+    const accounts = await provider.request({ method: "eth_requestAccounts" });
+    if (!Array.isArray(accounts) || typeof accounts[0] !== "string") {
+      throw new WalletError("The wallet did not share an account");
+    }
+    return accounts[0];
+  } catch (error) {
+    if (codeOf(error) === USER_REJECTED) {
+      throw new WalletError("The connection was declined in the wallet");
+    }
+    throw error;
+  }
 }
-
-export default App;
 ```
 
-### 3. Write a contract
+[`src/App.tsx`](src/App.tsx) also listens for `accountsChanged` and `chainChanged`, so the page follows the wallet. If the wallet is on another network, the app offers to switch to Apothem.
 
-In this example, a user can only log in if they hold the login token. Any existing contract can be used in the same way, including ones you didn't write.
+> [!TIP]
+> XDC tools often write addresses as `xdc123...`, but RPC calls need `0x123...`. `toHexAddress` converts them.
+
+### 2. Write a contract
+
+In this example, a user can only log in if they hold the login token. The deployer receives the only token, and can transfer it. The code is in [`contracts/LoginToken.sol`](contracts/LoginToken.sol).
 
 ```solidity
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
-import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-
 contract LoginTokenExample is ERC1155 {
     uint256 public constant LoginToken = 0;
 
@@ -76,7 +78,7 @@ contract LoginTokenExample is ERC1155 {
         _mint(msg.sender, LoginToken, 1, "");
     }
 
-    modifier OnlyLogin {
+    modifier OnlyLogin() {
         require(balanceOf(msg.sender, LoginToken) >= 1, "require Login token to login");
         _;
     }
@@ -87,27 +89,53 @@ contract LoginTokenExample is ERC1155 {
 }
 ```
 
-### 4. Deploy with Remix
+### 3. Deploy with Remix
 
-1. Install the XDCPay browser extension and write the contract in [Remix](https://remix.ethereum.org).
+1. Install the XDCPay browser extension, and paste the contract into [Remix](https://remix.ethereum.org).
 2. Select the Injected Provider environment. It should show `Custom (50)` on mainnet or `Custom (51)` on the Apothem testnet.
-3. Deploy the contract and sign the transaction in XDCPay.
-4. Confirm the contract on an XDC block explorer.
+3. Deploy the contract, and sign the transaction in XDCPay.
+4. Find the contract on [XDCScan](https://xdcscan.com) or its [testnet version](https://testnet.xdcscan.com).
 
 | Connect XDCPay | Deploy the contract |
 | --- | --- |
 | ![Connect XDCPay](https://lh6.googleusercontent.com/gUbfGVDh3_zg_GdPHL97e2UJVgvALG4Q1wFyzWzUr-pWBPGrw_ivp8eP88yQA6s1ctldOPDtXZM8zf-7YAZt56AsoD265Ux0sZT934vCyll3Z2p8RMIJ5nngBO1eHrwM_v43Dy6JyjcQHH0paWeldCA) | ![Deploy the contract](https://lh6.googleusercontent.com/6e1ROKqw3N4c-5YQR2rlmqQl5YsG9NGxqIMWWvA65mRuK-7MfS3aJIaLvnBayqqOa1khw9u87npr2blIM_bCczrZlPkx3KBmXDUfezU28zcUPUw7xnRJO83XHPL9VVEpJmXHx698r464xcUyVN3ugr8) |
 
-### 5. Test the app
+### 4. Call the contract
 
-Call your contract's functions from the app and sign them in XDCPay. If one fails, check that the functions in your app match the ones in the contract.
+`checkLogin` in `src/wallet.ts` sends the function's selector with `eth_call`. A revert from the contract means the account has no token.
 
-## What this repo contains
+The app also checks the reply. A call to an address with no contract succeeds and returns `0x`, so treating every success as a login would be a bug.
 
-| File | What it is |
+## What is tested
+
+The contract has 5 tests in [`test/foundry/LoginToken.t.sol`](test/foundry/LoginToken.t.sol). The web app has 30 tests in [`src/`](src), using a fake wallet. Both run in CI on every push, along with a production build.
+
+| Tested | Not tested |
 | --- | --- |
-| [`app.js`](app.js) | The React component from step 2, to copy into a React app |
-| [`index.html`](index.html), [`style.css`](style.css) | A placeholder page. It doesn't run the React component by itself |
+| The contract's login rule, and a login moving with the token | The XDCPay extension itself |
+| The selector in the web app matching the contract | A real network, testnet or mainnet |
+| Connecting, declining, changing account or network, and switching network | An independent security audit |
+| Wrong addresses and failed calls never showing as a login | |
+
+The built app was also run once by hand in headless Chrome, with a test wallet connected to the contract on a local Anvil chain. It gave the right result for the token holder, another account, an address with no contract and a browser with no wallet.
+
+To check it with the real extension, install XDCPay, switch to Apothem and follow [Run it](#run-it).
+
+## Changes from earlier versions
+
+- The repository now holds a working app. It used to hold a copy of the React component and a placeholder page that couldn't run it.
+- The app uses the wallet's standard provider instead of [`xdc-connect`](https://www.npmjs.com/package/xdc-connect). That package still installs, but its last release was in 2022, it expects React 17, it adds about 2,000 packages (428 MB) and it failed a default Vite build because it needs a Sass compiler.
+- The contract moved out of the README into `contracts/`, with tests.
+- 69 tracked `node_modules` files were removed, and the app now has a lockfile.
+
+## Known issues
+
+| Issue | Effect |
+| --- | --- |
+| `checkLogin` is not authentication | The app only asks whether an address holds the token. Anyone can name any address in `eth_call`, so a server must ask the user to sign a message instead of trusting this result |
+| Other wallets work too | Any wallet that provides `window.ethereum` can use this page, including MetaMask |
+| Revert messages vary between nodes | The app looks for `revert` in the error. A node that words it differently would show an error instead of "does not hold" |
+| "Forget this account" only clears the page | A page can't disconnect a wallet. Do that in the wallet |
 
 <details>
 <summary><strong>More XDC projects</strong></summary>
