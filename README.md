@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-  <a href="#Run it">run-it</a> · <a href="#The tutorial">the-tutorial</a> · <a href="#What is tested">what-is-tested</a> · <a href="#Known issues">known-issues</a>
+  <a href="#run-it">Run it</a> · <a href="#the-tutorial">The tutorial</a> · <a href="#what-is-tested">What is tested</a> · <a href="#known-issues">Known issues</a>
 </p>
 
 This tutorial connects a React web app to the XDCPay browser wallet, then checks a login token held in a small smart contract. The repository is the finished example, so you can run it first and then read how each part works.
