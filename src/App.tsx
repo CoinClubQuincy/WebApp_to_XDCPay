@@ -34,22 +34,31 @@ export function App() {
       return;
     }
     let active = true;
+    // The first read must not overwrite a change the wallet reported while it was pending
+    let accountChanged = false;
+    let chainChanged = false;
     const onAccounts = (accounts: string[]) => {
+      accountChanged = true;
       checkNumber.current += 1;
       setAccount(accounts[0] ?? null);
       setLogin(null);
+      setError(null);
     };
     const onChain = (chain: string) => {
+      chainChanged = true;
       checkNumber.current += 1;
       setChainId(Number(chain));
       setLogin(null);
+      setError(null);
     };
     provider.on?.("accountsChanged", onAccounts);
     provider.on?.("chainChanged", onChain);
     Promise.all([currentAccount(provider), currentChainId(provider)])
       .then(([existing, chain]) => {
-        if (active) {
-          setAccount(existing);
+        if (active && !accountChanged) {
+          setAccount((current) => current ?? existing);
+        }
+        if (active && !chainChanged) {
           setChainId(chain);
         }
       })
@@ -129,6 +138,7 @@ export function App() {
               checkNumber.current += 1;
               setContract(event.target.value.trim());
               setLogin(null);
+              setError(null);
             }}
           />
           <button

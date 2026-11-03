@@ -108,7 +108,7 @@ The app also checks the reply. A call to an address with no contract succeeds an
 
 ## What is tested
 
-The contract has 5 tests in [`test/foundry/LoginToken.t.sol`](test/foundry/LoginToken.t.sol). The web app has 36 tests in [`src/`](src), using a fake wallet. Both run in CI on every push, along with a production build.
+The contract has 5 tests in [`test/foundry/LoginToken.t.sol`](test/foundry/LoginToken.t.sol). The web app has 43 tests in [`src/`](src), using a fake wallet. Both run in CI on every push, along with a production build.
 
 | Tested | Not tested |
 | --- | --- |

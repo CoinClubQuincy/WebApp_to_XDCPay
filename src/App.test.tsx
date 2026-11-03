@@ -165,6 +165,105 @@ describe("App", () => {
     });
   });
 
+  describe("an error from an earlier check", () => {
+    async function failedCheck() {
+      const { listeners } = await connected({ eth_call: () => "0x" });
+      enterContract(CONTRACT);
+      fireEvent.click(screen.getByRole("button", { name: "Check login" }));
+      await screen.findByRole("alert");
+      return listeners;
+    }
+
+    it("clears when the account changes", async () => {
+      const listeners = await failedCheck();
+      await act(async () => {
+        listeners.get("accountsChanged")?.([OTHER]);
+      });
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+
+    it("clears when the network changes", async () => {
+      const listeners = await failedCheck();
+      await act(async () => {
+        listeners.get("chainChanged")?.("0x32");
+      });
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+
+    it("clears when the contract changes", async () => {
+      await failedCheck();
+      enterContract(OTHER);
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+  });
+
+  describe("the first read of the wallet", () => {
+    it("does not overwrite an account change", async () => {
+      let finish: (accounts: string[]) => void = () => {};
+      const reply = new Promise<string[]>((resolve) => {
+        finish = resolve;
+      });
+      const { listeners } = wallet({ eth_accounts: () => reply });
+      render(<App />);
+      await act(async () => {
+        listeners.get("accountsChanged")?.([OTHER]);
+      });
+      await act(async () => {
+        finish([ACCOUNT]);
+      });
+      expect(screen.getByText(OTHER)).toBeTruthy();
+      expect(screen.queryByText(ACCOUNT)).toBeNull();
+    });
+
+    it("does not bring back an account the wallet disconnected", async () => {
+      let finish: (accounts: string[]) => void = () => {};
+      const reply = new Promise<string[]>((resolve) => {
+        finish = resolve;
+      });
+      const { listeners } = wallet({ eth_accounts: () => reply });
+      render(<App />);
+      await act(async () => {
+        listeners.get("accountsChanged")?.([]);
+      });
+      await act(async () => {
+        finish([ACCOUNT]);
+      });
+      expect(screen.queryByText(ACCOUNT)).toBeNull();
+      expect(screen.getByRole("button", { name: "Connect wallet" })).toBeTruthy();
+    });
+
+    it("does not undo a connection made while it was pending", async () => {
+      let finish: (accounts: string[]) => void = () => {};
+      const reply = new Promise<string[]>((resolve) => {
+        finish = resolve;
+      });
+      wallet({ eth_accounts: () => reply });
+      render(<App />);
+      fireEvent.click(screen.getByRole("button", { name: "Connect wallet" }));
+      await screen.findByText(ACCOUNT);
+      await act(async () => {
+        finish([]);
+      });
+      expect(screen.getByText(ACCOUNT)).toBeTruthy();
+    });
+
+    it("does not overwrite a network change", async () => {
+      let finish: (chain: string) => void = () => {};
+      const reply = new Promise<string>((resolve) => {
+        finish = resolve;
+      });
+      const { listeners } = wallet({ eth_accounts: () => [ACCOUNT], eth_chainId: () => reply });
+      render(<App />);
+      await act(async () => {
+        listeners.get("chainChanged")?.("0x7a69");
+      });
+      await act(async () => {
+        finish("0x33");
+      });
+      expect(screen.getByText("Unknown network (31337)")).toBeTruthy();
+    });
+  });
+
   it("needs a valid contract address before checking", async () => {
     await connected();
     const button = screen.getByRole("button", { name: "Check login" }) as HTMLButtonElement;
