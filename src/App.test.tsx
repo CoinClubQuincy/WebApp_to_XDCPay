@@ -84,6 +84,87 @@ describe("App", () => {
     expect(provider.request).toHaveBeenCalledWith({ method: "wallet_switchEthereumChain", params: [{ chainId: "0x33" }] });
   });
 
+  it("does not check on a network it does not know", async () => {
+    await connected({ eth_chainId: () => "0x7a69" });
+    enterContract(CONTRACT);
+    const check = screen.getByRole("button", { name: "Check login" }) as HTMLButtonElement;
+    expect(check.disabled).toBe(true);
+  });
+
+  describe("a reply that arrives after something changed", () => {
+    function pendingCall() {
+      let finish: (value: string) => void = () => {};
+      let fail: (reason: unknown) => void = () => {};
+      const reply = new Promise<string>((resolve, reject) => {
+        finish = resolve;
+        fail = reject;
+      });
+      return { reply, finish: (value: string) => finish(value), fail: (reason: unknown) => fail(reason) };
+    }
+
+    async function startCheck() {
+      const call = pendingCall();
+      const { listeners } = await connected({ eth_call: () => call.reply });
+      enterContract(CONTRACT);
+      fireEvent.click(screen.getByRole("button", { name: "Check login" }));
+      await act(async () => {});
+      return { call, listeners };
+    }
+
+    it("is ignored after the account changes", async () => {
+      const { call, listeners } = await startCheck();
+      await act(async () => {
+        listeners.get("accountsChanged")?.([OTHER]);
+      });
+      await act(async () => {
+        call.finish(TRUE);
+      });
+      expect(screen.queryByRole("status")).toBeNull();
+    });
+
+    it("is ignored after the network changes", async () => {
+      const { call, listeners } = await startCheck();
+      await act(async () => {
+        listeners.get("chainChanged")?.("0x32");
+      });
+      await act(async () => {
+        call.finish(TRUE);
+      });
+      expect(screen.queryByRole("status")).toBeNull();
+    });
+
+    it("is ignored after the contract changes", async () => {
+      const { call } = await startCheck();
+      enterContract(OTHER);
+      await act(async () => {
+        call.finish(TRUE);
+      });
+      expect(screen.queryByRole("status")).toBeNull();
+    });
+
+    it("is ignored after the account is forgotten", async () => {
+      const { call } = await startCheck();
+      fireEvent.click(screen.getByRole("button", { name: "Forget this account" }));
+      await act(async () => {
+        call.finish(TRUE);
+      });
+      fireEvent.click(screen.getByRole("button", { name: "Connect wallet" }));
+      await screen.findByText(ACCOUNT);
+      expect(screen.queryByRole("status")).toBeNull();
+    });
+
+    it("hides a stale failure too", async () => {
+      const { call, listeners } = await startCheck();
+      await act(async () => {
+        listeners.get("accountsChanged")?.([OTHER]);
+      });
+      await act(async () => {
+        call.fail(new Error("the node is down"));
+      });
+      expect(screen.queryByRole("alert")).toBeNull();
+    });
+  });
+
   it("needs a valid contract address before checking", async () => {
     await connected();
     const button = screen.getByRole("button", { name: "Check login" }) as HTMLButtonElement;

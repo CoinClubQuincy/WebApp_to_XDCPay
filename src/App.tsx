@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   APOTHEM,
   checkLogin,
@@ -26,6 +26,8 @@ export function App() {
   const [login, setLogin] = useState<LoginResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  // Changes with the account, network or contract, so a reply to an older question is ignored
+  const checkNumber = useRef(0);
 
   useEffect(() => {
     if (!provider) {
@@ -33,10 +35,12 @@ export function App() {
     }
     let active = true;
     const onAccounts = (accounts: string[]) => {
+      checkNumber.current += 1;
       setAccount(accounts[0] ?? null);
       setLogin(null);
     };
     const onChain = (chain: string) => {
+      checkNumber.current += 1;
       setChainId(Number(chain));
       setLogin(null);
     };
@@ -122,16 +126,28 @@ export function App() {
             placeholder="0x..."
             spellCheck={false}
             onChange={(event) => {
+              checkNumber.current += 1;
               setContract(event.target.value.trim());
               setLogin(null);
             }}
           />
           <button
-            disabled={busy || !isAddress(contract)}
+            disabled={busy || !network || !isAddress(contract)}
             onClick={() =>
               act(async () => {
+                checkNumber.current += 1;
+                const thisCheck = checkNumber.current;
                 setLogin(null);
-                setLogin(await checkLogin(provider, account, contract));
+                try {
+                  const result = await checkLogin(provider, account, contract);
+                  if (thisCheck === checkNumber.current) {
+                    setLogin(result);
+                  }
+                } catch (caught) {
+                  if (thisCheck === checkNumber.current) {
+                    throw caught;
+                  }
+                }
               })
             }
           >
@@ -142,6 +158,7 @@ export function App() {
           <button
             className="secondary"
             onClick={() => {
+              checkNumber.current += 1;
               setAccount(null);
               setLogin(null);
               setError(null);

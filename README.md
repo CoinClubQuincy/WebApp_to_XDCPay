@@ -108,7 +108,7 @@ The app also checks the reply. A call to an address with no contract succeeds an
 
 ## What is tested
 
-The contract has 5 tests in [`test/foundry/LoginToken.t.sol`](test/foundry/LoginToken.t.sol). The web app has 30 tests in [`src/`](src), using a fake wallet. Both run in CI on every push, along with a production build.
+The contract has 5 tests in [`test/foundry/LoginToken.t.sol`](test/foundry/LoginToken.t.sol). The web app has 36 tests in [`src/`](src), using a fake wallet. Both run in CI on every push, along with a production build.
 
 | Tested | Not tested |
 | --- | --- |
@@ -134,6 +134,8 @@ To check it with the real extension, install XDCPay, switch to Apothem and follo
 | --- | --- |
 | `checkLogin` is not authentication | The app only asks whether an address holds the token. Anyone can name any address in `eth_call`, so a server must ask the user to sign a message instead of trusting this result |
 | Other wallets work too | Any wallet that provides `window.ethereum` can use this page, including MetaMask |
+| A wrong contract can look like a refusal | The app can't tell a contract that says no from a different contract that reverts, so both show "does not hold" |
+| Only Apothem and mainnet can be checked | On any other network the check is off. For a local chain, start it with chain ID 51, as in `anvil --chain-id 51` |
 | Revert messages vary between nodes | The app looks for `revert` in the error. A node that words it differently would show an error instead of "does not hold" |
 | "Forget this account" only clears the page | A page can't disconnect a wallet. Do that in the wallet |
 
